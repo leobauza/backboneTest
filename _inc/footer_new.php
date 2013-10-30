@@ -64,10 +64,21 @@ $.fn.serializeObject = function() {
 
 /* 
  * =============================================================
+ * GLOBAL (global object for namespace)
+ * =============================================================
+ */
+var App = {
+	Models: {},
+	Views: {},
+	Collections: {}
+}
+
+/* 
+ * =============================================================
  * MODELS
  * =============================================================
  */
-	var Todo = Backbone.Model.extend({
+	App.Models.Todo = Backbone.Model.extend({
 		urlRoot: '/api/todos', //remember this is URL ROOT not URL
 		defaults: {
 			'description' : 'empty to do..',
@@ -92,9 +103,9 @@ $.fn.serializeObject = function() {
  * COLLECTIONS
  * =============================================================
  */
-	var Todos = Backbone.Collection.extend({
+	App.Collections.Todos = Backbone.Collection.extend({
 		url: '/api/todos',
-		model: Todo,
+		model: App.Models.Todo,
 		comparator: 'ordinal'
 	});
 
@@ -103,7 +114,7 @@ $.fn.serializeObject = function() {
  * VIEWS
  * =============================================================
  */
-	var TodoView = Backbone.View.extend({
+	App.Views.TodoView = Backbone.View.extend({
 		//tagName: 'li',
 		template: _.template($('#todo-tpl').html()),
 		initialize: function(){
@@ -136,7 +147,7 @@ $.fn.serializeObject = function() {
 		}
 	});
 
-	var TodosView = Backbone.View.extend({
+	App.Views.TodosView = Backbone.View.extend({
 		el: '.page ul',
 		initialize: function(){
 			this.listenTo(this.collection, 'change', this.render);
@@ -153,7 +164,7 @@ $.fn.serializeObject = function() {
 			this.collection.where({'id':id}).forEach(this.addOne, this);
 		},
 		addOne: function(todo){
-			var todoView = new TodoView({model: todo});
+			var todoView = new App.Views.TodoView({model: todo});
 			
 			todoView.listenTo(this, 'clean_up', todoView.remove); //have this todoView listen to clean_up!
 			todoView.render();
@@ -202,7 +213,7 @@ $.fn.serializeObject = function() {
 		}
 	});
 
-	var FormView = Backbone.View.extend({
+	App.Views.FormView = Backbone.View.extend({
 		template: _.template($('#todo-form-tpl').html()),
 		initialize: function(){
 			//this.listenTo(router, "route", this.remove);
@@ -290,22 +301,22 @@ $.fn.serializeObject = function() {
  * ROUTERS
  * =============================================================
  */
-	var TodoRouter = Backbone.Router.extend({
+	App.TodoRouter = Backbone.Router.extend({
 		routes: {
 			"" : "home",
 			"todos/:id" : "single",
 			"form/:id" : "form"
 		},
 		initialize: function(){
-			this.todos = new Todos();
-			this.todosView = new TodosView({
+			this.todos = new App.Collections.Todos();
+			this.todosView = new App.Views.TodosView({
 				collection:this.todos
 			});
 			this.fetching = this.todos.fetch();
 		}
 	});
 
-	var router = new TodoRouter();
+	var router = new App.TodoRouter();
 
 	//home
 	router.on('route:home', function(){
@@ -336,7 +347,7 @@ $.fn.serializeObject = function() {
 			//main list area on landing...
 			that.todos.where({'id':id}).forEach(function(model){
 				//console.log(model);
-				var formView = new FormView({
+				var formView = new App.Views.FormView({
 					model:model,
 					stuff:"my stuff"
 				});
@@ -345,6 +356,9 @@ $.fn.serializeObject = function() {
 		});
 
 	});
+
+
+
 
 
 	Backbone.history.start({ pushState: true });
