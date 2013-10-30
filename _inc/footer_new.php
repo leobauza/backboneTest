@@ -107,7 +107,7 @@ $.fn.serializeObject = function() {
 		//tagName: 'li',
 		template: _.template($('#todo-tpl').html()),
 		initialize: function(){
-			this.listenTo(router, "route:single | route:home", this.remove);
+			//this.listenTo(router, "route:single | route:home", this.remove);
 		},
 		render: function(){
 			this.setElement(this.template(this.model.attributes));
@@ -146,8 +146,6 @@ $.fn.serializeObject = function() {
 			console.log('render');
 			this.removeItemViews(); 
 			this.collection.forEach(this.addOne, this);
-
-
 		},
 		renderOne: function(id){
 			console.log('render one');
@@ -207,20 +205,14 @@ $.fn.serializeObject = function() {
 	var FormView = Backbone.View.extend({
 		template: _.template($('#todo-form-tpl').html()),
 		initialize: function(){
-			this.listenTo(router, "route", this.remove);
+			//this.listenTo(router, "route", this.remove);
 		},
 		render: function(){
-			//fill in body if it's empty
-			if(!$('.page ul > *').length){
-				var todos = new Todos();
-				
-				todos.fetch({
-					success: function(){
-						var todosView = new TodosView({collection:todos});
-						todosView.render();
-					}
-				});
-			}
+
+			//check if the body is empty and fill it up...
+
+			console.log(this.model.attributes);
+			
 			this.setElement(this.template(this.model.attributes));
 			$('.form').html(this.el);
 		},
@@ -262,7 +254,8 @@ $.fn.serializeObject = function() {
 
 					//only log the details if the value has changed!
 					var todoDetails = $(e.currentTarget).closest('form').serializeObject();
-					that.model.save(todoDetails, {
+					that.model.save(todoDetails,{
+						silent:true, //make it silent so that the list doesn't update causing sort problems...(other solutions????)
 						success: function(){
 							console.log(todoDetails);
 						}
@@ -318,6 +311,7 @@ $.fn.serializeObject = function() {
 	router.on('route:home', function(){
 		var that = this;
 		
+		//after fetching call render (on the collection view)
 		this.fetching.done(function(){
 			that.todosView.render();
 		});
@@ -327,34 +321,29 @@ $.fn.serializeObject = function() {
 	router.on('route:single', function(id){
 		var that = this;
 
+		//after fetching call render one (on the collection view) and pass the id
 		this.fetching.done(function(){
-		
-			//focusOnTodoItem: function(id) {
-				// var modelsToRemove = that.todos.filter(function(todo){
-				// 	return todo.id != id;
-				// });
-				// 
-				// that.todos.remove(modelsToRemove);
-			//}
-			
 			that.todosView.renderOne(id);
-			
 		});
 		
 
 	});
 	//form
 	router.on('route:form', function(id){
-		var todo = new Todo({id:id});
-		todo.fetch({
-			success: function(){
+		var that = this;
+		this.fetching.done(function(){
+			//considering doing this through todosView so that it can populate the 
+			//main list area on landing...
+			that.todos.where({'id':id}).forEach(function(model){
+				//console.log(model);
 				var formView = new FormView({
-					model:todo, 
+					model:model,
 					stuff:"my stuff"
 				});
 				formView.render();
-			}
+			});
 		});
+
 	});
 
 
