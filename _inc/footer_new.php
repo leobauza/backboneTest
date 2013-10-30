@@ -67,11 +67,27 @@ $.fn.serializeObject = function() {
  * GLOBAL (global object for namespace)
  * =============================================================
  */
-var App = {
+var App = new (Backbone.View.extend({
 	Models: {},
 	Views: {},
-	Collections: {}
-}
+	Collections: {},
+	events: {
+		'click a[href^="/"]' : function(e){
+			// console.log(e.target.pathname);
+			// console.log($(e.currentTarget).attr('href'))
+			router.navigate(e.target.pathname, true);
+			e.preventDefault();
+		}
+	},
+	
+	start: function(e){
+		Backbone.history.start({ pushState: true });
+	}
+}))({el: document.body});
+
+$(function(){
+	App.start();
+});
 
 /* 
  * =============================================================
@@ -357,17 +373,6 @@ var App = {
 
 	});
 
-
-
-
-
-	Backbone.history.start({ pushState: true });
-	//click events cancel and route navigate
-	$(document).on("click", "a[href^='/']", function(e) {
-		$href = $(this).attr('href');
-		router.navigate($href, true);
-		e.preventDefault();
-	});
 
 </script>
 
