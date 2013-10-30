@@ -140,14 +140,19 @@ $.fn.serializeObject = function() {
 		el: '.page ul',
 		initialize: function(){
 			this.listenTo(this.collection, 'change', this.render);
-			this.listenTo(router, 'route:single | route:home', this.removeItemViews);
+			//this.listenTo(router, 'route:single | route:home', this.removeItemViews);
 		},
-		render: function(){
+		render: function(id){
 			console.log('render');
 			this.removeItemViews(); 
-			//this.$el.empty(); //empty non removed ones
 			this.collection.forEach(this.addOne, this);
 
+
+		},
+		renderOne: function(id){
+			console.log('render one');
+			this.removeItemViews(); 
+			this.collection.where({'id':id}).forEach(this.addOne, this);
 		},
 		addOne: function(todo){
 			var todoView = new TodoView({model: todo});
@@ -187,7 +192,7 @@ $.fn.serializeObject = function() {
 				model.save({'ordinal': ordinal}, {silent:true});
 			});
 
-			model.save({'ordinal': position}, {silent:true}); //render my view here!
+			model.save({'ordinal': position});//, {silent:true}); //render my view here!
 			this.collection.add(model, {at: position});
 			//save and add the model I took out of my collection
 			
@@ -297,6 +302,13 @@ $.fn.serializeObject = function() {
 			"" : "home",
 			"todos/:id" : "single",
 			"form/:id" : "form"
+		},
+		initialize: function(){
+			this.todos = new Todos();
+			this.todosView = new TodosView({
+				collection:this.todos
+			});
+			this.fetching = this.todos.fetch();
 		}
 	});
 
@@ -304,37 +316,32 @@ $.fn.serializeObject = function() {
 
 	//home
 	router.on('route:home', function(){
-		var todos = new Todos();
-		//todos.comparator = "ordinal"; //to override!
+		var that = this;
 		
-		// todos.comparator = function(todo1, todo2){
-		// 	console.log("todo1: " + todo1.attributes.id);
-		// 	console.log("todo2: " + todo2.attributes.id);
-		// 	return todo1.get('status') < todo2.get('status')
-		// };
-		
-		todos.fetch({
-			success: function(){
-				var todosView = new TodosView({
-					collection:todos
-				});
-				todosView.render();
-			}
+		this.fetching.done(function(){
+			that.todosView.render();
 		});
+
 	});
 	//single
 	router.on('route:single', function(id){
 		var that = this;
-		var todo = new Todo({id:id});
-		todo.fetch({
-			success: function(){
-				var todoView = new TodoView({
-					model:todo, 
-					single:true
-				});
-				todoView.render();
-			}
+
+		this.fetching.done(function(){
+		
+			//focusOnTodoItem: function(id) {
+				// var modelsToRemove = that.todos.filter(function(todo){
+				// 	return todo.id != id;
+				// });
+				// 
+				// that.todos.remove(modelsToRemove);
+			//}
+			
+			that.todosView.renderOne(id);
+			
 		});
+		
+
 	});
 	//form
 	router.on('route:form', function(id){
