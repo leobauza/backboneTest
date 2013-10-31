@@ -8,14 +8,6 @@
 		var bootstrap = {
 			todos: <?php echo file_get_contents("http://bb.test/api/todos",false,$context) ;?>
 		}
-
-		// var bootstrap = {
-		// 	todos: [
-		// 		{id:1, description:"my first todo", status:"complete", ordinal:1},
-		// 		{id:2, description:"my second todo", status:"complete", ordinal:2},
-		// 		{id:3, description:"my third todo", status:"complete", ordinal:3}
-		// 	]
-		// }
 	</script>
 
 
@@ -154,24 +146,12 @@ $(function(){
 		//tagName: 'li',
 		template: _.template($('#todo-tpl').html()),
 		initialize: function(){
-			//this.listenTo(router, "route:single | route:home", this.remove);
 		},
 		render: function(){
 			this.setElement(this.template(this.model.attributes));
-			if(this.options.single == true) {
-				console.log(this.options.single)
-				console.log(this.model.attributes.id)
-				$('.page ul').html(this.el);
-			}
 		},
 		toggleStatus: function(){
 			this.model.toggleStatus();
-			if(this.options.stuff == "my stuff") {
-				console.log("yes stuff")
-				this.$el.removeClass('incomplete').toggleClass('complete');
-			} else {
-				console.log("no stuff");
-			}
 		},
 		drop: function(event, index) {
 			//console.log(this.model);
@@ -187,7 +167,6 @@ $(function(){
 		el: '.page ul',
 		initialize: function(){
 			this.listenTo(this.collection, 'change', this.render);
-			//this.listenTo(router, 'route:single | route:home', this.removeItemViews);
 		},
 		render: function(){
 			console.log('render');
@@ -252,7 +231,6 @@ $(function(){
 	App.Views.FormView = Backbone.View.extend({
 		template: _.template($('#todo-form-tpl').html()),
 		initialize: function(){
-			//this.listenTo(router, "route", this.remove);
 		},
 		render: function(){
 
@@ -351,13 +329,12 @@ $(function(){
 			this.todosView = new App.Views.TodosView({
 				collection:this.todos
 			});
-			
+
 			//console.log(this.todos.models);
 			this.todosView.render();
 
 			this.fetching = this.todos.fetch({silent:true}); //silently fetch after render??
-			
-			
+
 		}
 	});
 
