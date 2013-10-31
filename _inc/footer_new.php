@@ -24,9 +24,9 @@
 <script type="text/template" id="todo-form-tpl"
 ><form>
 	<label>description</label>
-	<textarea name="description" value="<%= description %>"><%= description %></textarea>
+	<textarea name="description" value="{{description}}">{{description}}</textarea>
 	<label>status</label>
-	<input name="status" type="text" value="<%= status %>"></input>
+	<input name="status" type="text" value="{{status}}"></input>
 </form>
 </script>
 
@@ -242,7 +242,7 @@ $(function(){
 	});
 
 	App.Views.FormView = Backbone.View.extend({
-		template: _.template($('#todo-form-tpl').html()),
+		template: Mustache.compile($('#todo-form-tpl').html()),
 		initialize: function(){
 			console.log(this.options.stuff); //see router to see stuff being passed
 		},
