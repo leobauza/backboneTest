@@ -8,18 +8,9 @@
 		var bootstrap = {
 			todos: <?php echo file_get_contents("http://bb.test/api/todos",false,$context) ;?>
 		}
-
-		// var bootstrap = {
-		// 	todos: [
-		// 		{id:1, description:"my first todo", status:"complete", ordinal:1},
-		// 		{id:2, description:"my second todo", status:"complete", ordinal:2},
-		// 		{id:3, description:"my third todo", status:"complete", ordinal:3}
-		// 	]
-		// }
 	</script>
 
 
-<!-- <% if (status === "complete") print("checked") %> -->
 <script type="text/template" id="todo-tpl"
 ><li class="{{ status }}"> 
 	<input data-id="{{ id }}" type="checkbox" {{#checkbox}}checked{{/checkbox}}/>
@@ -129,7 +120,6 @@ $(function(){
 			// console.log('CHANGE: ' + this.attributes.status);
 		},
 		toggleStatus: function(){
-			console.log(this.attributes);
 			var $status = this.get('status');
 			($status == 'incomplete') ? this.set({'status':'complete'}) : this.set({'status':'incomplete'});
 			this.save();
@@ -165,11 +155,6 @@ $(function(){
 			
 			this.setElement(this.template(tplObj));
 			
-			if(this.options.single == true) {
-				console.log(this.options.single)
-				console.log(this.model.attributes.id)
-				$('.page ul').html(this.el);
-			}
 		},
 		toggleStatus: function(){
 			this.model.toggleStatus();
@@ -194,10 +179,9 @@ $(function(){
 		el: '.page ul',
 		initialize: function(){
 			this.listenTo(this.collection, 'change', this.render);
-			//this.listenTo(router, 'route:single | route:home', this.removeItemViews);
 		},
 		render: function(){
-			console.log('render');
+			console.log('render all');
 			this.removeItemViews(); 
 			this.collection.forEach(this.addOne, this);
 		},
@@ -216,6 +200,7 @@ $(function(){
 				placeholder: "sortable-placeholder",
 				//forcePlaceholderSize: true,
 				update: function(event, ui) {
+					console.log('sort plugin end');
 					ui.item.trigger('drop', ui.item.index());
 				},
 				start: function(event, ui) {
@@ -259,7 +244,7 @@ $(function(){
 	App.Views.FormView = Backbone.View.extend({
 		template: _.template($('#todo-form-tpl').html()),
 		initialize: function(){
-			//this.listenTo(router, "route", this.remove);
+			console.log(this.options.stuff); //see router to see stuff being passed
 		},
 		render: function(){
 
@@ -353,7 +338,7 @@ $(function(){
 		},
 		initialize: function(bootstrap){
 			console.log("bootstrapping models from the server!")
-			this.todos = new App.Collections.Todos(bootstrap.todos);
+			this.todos = new App.Collections.Todos(bootstrap.todos); //bootstrap defined at the top in a script tag
 
 			this.todosView = new App.Views.TodosView({
 				collection:this.todos
@@ -373,7 +358,6 @@ $(function(){
 	//home
 	router.on('route:home', function(){
 		var that = this;
-		console.log('home route');
 		//after fetching call render (on the collection view)
 		this.fetching.done(function(){
 			that.todosView.render();
@@ -383,8 +367,6 @@ $(function(){
 	//single
 	router.on('route:single', function(id){
 		var that = this;
-		console.log('single route');
-
 		//after fetching call render one (on the collection view) and pass the id
 		this.fetching.done(function(){
 			that.todosView.renderOne(id);
@@ -395,8 +377,6 @@ $(function(){
 	//form
 	router.on('route:form', function(id){
 		var that = this;
-		console.log('form route');
-		
 		this.fetching.done(function(){
 			//considering doing this through todosView so that it can populate the 
 			//main list area on landing...
