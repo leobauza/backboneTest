@@ -1,6 +1,18 @@
 	<footer class="site-footer container">
 		a footer
 	</footer>
+	
+	<!-- jquery libs -->
+	<script src="../assets/js/jquery-1.9.1.js"></script>
+	<script src="../assets/js/jquery-migrate--1.2.1.js"></script>
+	<script src="../assets/js/jquery-ui-1.10.3.custom.js"></script>
+
+	<!-- BACKBONE -->
+	<script src="../assets/js/underscore.js"></script>
+	<script src="../assets/js/mustache.js"></script>
+	<script src="../assets/js/backbone.js"></script>
+	
+	
 	<?php
 	$context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
 	?>
@@ -9,7 +21,6 @@
 			todos: <?php echo file_get_contents("http://bb.test/api/todos",false,$context) ;?>
 		}
 	</script>
-
 
 <script type="text/template" id="todo-tpl"
 ><li class="{{ status }}"> 
@@ -29,16 +40,6 @@
 	<input name="status" type="text" value="{{status}}"></input>
 </form>
 </script>
-
-	<!-- jquery libs -->
-	<script src="../assets/js/jquery-1.9.1.js"></script>
-	<script src="../assets/js/jquery-migrate--1.2.1.js"></script>
-	<script src="../assets/js/jquery-ui-1.10.3.custom.js"></script>
-
-	<!-- BACKBONE -->
-	<script src="../assets/js/underscore.js"></script>
-	<script src="../assets/js/mustache.js"></script>
-	<script src="../assets/js/backbone.js"></script>
 
 	
 <script>
@@ -179,6 +180,20 @@ $(function(){
 		el: '.page ul',
 		initialize: function(){
 			this.listenTo(this.collection, 'change', this.render);
+
+			//make sortable on initialize
+			this.$el.sortable({
+				placeholder: "sortable-placeholder",
+				//forcePlaceholderSize: true,
+				update: function(event, ui) {
+					console.log('sort plugin end');
+					ui.item.trigger('drop', ui.item.index());
+				},
+				start: function(event, ui) {
+					console.log('sort plugin start')
+					ui.placeholder.height(ui.helper.height());
+				}
+			});
 		},
 		render: function(){
 			console.log('render all');
@@ -196,18 +211,6 @@ $(function(){
 			todoView.listenTo(this, 'clean_up', todoView.remove); //have this todoView listen to clean_up!
 			todoView.render();
 			this.$el.append(todoView.el);
-			this.$el.sortable({
-				placeholder: "sortable-placeholder",
-				//forcePlaceholderSize: true,
-				update: function(event, ui) {
-					console.log('sort plugin end');
-					ui.item.trigger('drop', ui.item.index());
-				},
-				start: function(event, ui) {
-					console.log('sort plugin start')
-					ui.placeholder.height(ui.helper.height());
-				}
-			});
 		},
 		removeItemViews: function(){
 			this.trigger('clean_up');
@@ -218,7 +221,7 @@ $(function(){
 			//the model view is listening for "drop" and when that happens it triggers update-sort on its el
 			//and since thats INSIDE this collection view it triggers sortUpdate...
 			//and here we are...
-			console.log(model);
+			//console.log(model);
 			this.collection.remove(model);
 			//remove from the collection so that the next calculations make sense...
 
