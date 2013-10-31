@@ -19,14 +19,14 @@
 	</script>
 
 
-
+<!-- <% if (status === "complete") print("checked") %> -->
 <script type="text/template" id="todo-tpl"
-><li class="<%= status %>"> 
-	<input data-id="<%= id %>" type="checkbox" <% if (status === "complete") print("checked") %> />
-	<strong>id: <%= id %> | order: <%= ordinal %></strong>
-	<span><%= description %></span>
-	<a class="btn btn-main" href="/todos/<%= id %>">go to <%= id %></a>
-	<a class="btn btn-main" href="/form/<%= id %>">form for <%= id %></a>
+><li class="{{ status }}"> 
+	<input data-id="{{ id }}" type="checkbox" {{#checkbox}}checked{{/checkbox}}/>
+	<strong>id: {{ id }} | order: {{ordinal}}</strong>
+	<span>{{description}}</span>
+	<a class="btn btn-main" href="/todos/{{id}}">go to {{id}}</a>
+	<a class="btn btn-main" href="/form/{{id}}">form for {{id}}</a>
 </li>
 </script>
 
@@ -129,6 +129,7 @@ $(function(){
 			// console.log('CHANGE: ' + this.attributes.status);
 		},
 		toggleStatus: function(){
+			console.log(this.attributes);
 			var $status = this.get('status');
 			($status == 'incomplete') ? this.set({'status':'complete'}) : this.set({'status':'incomplete'});
 			this.save();
@@ -153,12 +154,17 @@ $(function(){
  */
 	App.Views.TodoView = Backbone.View.extend({
 		//tagName: 'li',
-		template: _.template($('#todo-tpl').html()),
+		template: Mustache.compile($('#todo-tpl').html()),
 		initialize: function(){
 			//this.listenTo(router, "route:single | route:home", this.remove);
 		},
 		render: function(){
-			this.setElement(this.template(this.model.attributes));
+			
+			(this.model.attributes.status == "incomplete")? switcher = {checkbox: false} : switcher = {checkbox:true};
+			var tplObj = _.extend(switcher, this.model.attributes); //order matters...attrs first would modify the attrs and we dont want that...
+			
+			this.setElement(this.template(tplObj));
+			
 			if(this.options.single == true) {
 				console.log(this.options.single)
 				console.log(this.model.attributes.id)
