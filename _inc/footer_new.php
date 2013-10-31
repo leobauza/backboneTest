@@ -1,6 +1,24 @@
 	<footer class="site-footer container">
 		a footer
 	</footer>
+	<?php
+	$context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
+	?>
+	<script>
+		var bootstrap = {
+			todos: <?php echo file_get_contents("http://bb.test/api/todos",false,$context) ;?>
+		}
+
+		// var bootstrap = {
+		// 	todos: [
+		// 		{id:1, description:"my first todo", status:"complete", ordinal:1},
+		// 		{id:2, description:"my second todo", status:"complete", ordinal:2},
+		// 		{id:3, description:"my third todo", status:"complete", ordinal:3}
+		// 	]
+		// }
+	</script>
+
+
 
 <script type="text/template" id="todo-tpl"
 ><li class="<%= status %>"> 
@@ -20,7 +38,6 @@
 	<input name="status" type="text" value="<%= status %>"></input>
 </form>
 </script>
-
 
 	<!-- jquery libs -->
 	<script src="../assets/js/jquery-1.9.1.js"></script>
@@ -81,7 +98,10 @@ var App = new (Backbone.View.extend({
 	},
 	
 	start: function(e){
-		Backbone.history.start({ pushState: true });
+		Backbone.history.start({
+			pushState: true,
+			silent:true //pass silent true to not trigger the home route on load so you can bootstrap data?
+		});
 	}
 }))({el: document.body});
 
@@ -169,7 +189,7 @@ $(function(){
 			this.listenTo(this.collection, 'change', this.render);
 			//this.listenTo(router, 'route:single | route:home', this.removeItemViews);
 		},
-		render: function(id){
+		render: function(){
 			console.log('render');
 			this.removeItemViews(); 
 			this.collection.forEach(this.addOne, this);
@@ -317,27 +337,36 @@ $(function(){
  * ROUTERS
  * =============================================================
  */
+
 	App.TodoRouter = Backbone.Router.extend({
 		routes: {
 			"" : "home",
 			"todos/:id" : "single",
 			"form/:id" : "form"
 		},
-		initialize: function(){
-			this.todos = new App.Collections.Todos();
+		initialize: function(bootstrap){
+			console.log("bootstrapping models from the server!")
+			this.todos = new App.Collections.Todos(bootstrap.todos);
+
 			this.todosView = new App.Views.TodosView({
 				collection:this.todos
 			});
-			this.fetching = this.todos.fetch();
+			
+			//console.log(this.todos.models);
+			this.todosView.render();
+
+			this.fetching = this.todos.fetch({silent:true}); //silently fetch after render??
+			
+			
 		}
 	});
 
-	var router = new App.TodoRouter();
+	var router = new App.TodoRouter(bootstrap);
 
 	//home
 	router.on('route:home', function(){
 		var that = this;
-		
+		console.log('home route');
 		//after fetching call render (on the collection view)
 		this.fetching.done(function(){
 			that.todosView.render();
@@ -347,6 +376,7 @@ $(function(){
 	//single
 	router.on('route:single', function(id){
 		var that = this;
+		console.log('single route');
 
 		//after fetching call render one (on the collection view) and pass the id
 		this.fetching.done(function(){
@@ -358,6 +388,8 @@ $(function(){
 	//form
 	router.on('route:form', function(id){
 		var that = this;
+		console.log('form route');
+		
 		this.fetching.done(function(){
 			//considering doing this through todosView so that it can populate the 
 			//main list area on landing...
