@@ -46,6 +46,7 @@
 
 	<!-- BACKBONE -->
 	<script src="../assets/js/underscore.js"></script>
+	<script src="../assets/js/mustache.js"></script>
 	<script src="../assets/js/backbone.js"></script>
 
 	
